@@ -62,7 +62,7 @@ jobs:
     steps:
       - id: checkout
         uses: actions/checkout@v3
-      - id: install packages
+      - id: install_packages
         name: Install npm packages
         run: |
           npm install --dev
