@@ -69,6 +69,7 @@ export const createTask = (
   dynamodb
     .send(new PutItemCommand(newTask))
     .then((data) => {
+      console.log("successfully update the item");
       const response = {
         statusCode: 200,
         body: JSON.stringify({
