@@ -1,0 +1,78 @@
+name: Digitrix API
+on:
+  push:
+    branches: ['master']
+  pull_request:
+    branches: ['master']
+
+env:
+  IS_TEST: ${{ github.ref_type == 'branch' && github.ref_name == 'master'}}
+  IS_PULL: ${{  github.event_name == 'pull_request' && ( github.base_ref == 'master') }}
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  git_flags:
+    name: Set git flags
+    runs-on: ubuntu-latest
+    outputs:
+      IS_TEST: ${{steps.git_flags.outputs.IS_TEST}}
+      IS_PULL: ${{steps.git_flags.outputs.IS_PULL}}
+    steps:
+      - id: git_flags
+        name: git_flags
+        run: |
+          echo "IS_TEST=${{toJSON(env.IS_TEST)}}" >> $GITHUB_OUTPUT
+          echo "IS_PULL=${{toJSON(env.IS_PULL)}}" >> $GITHUB_OUTPUT
+  setup:
+    needs: git_flags
+    if:
+      ${{  fromJSON(needs.git_flags.outputs.IS_TEST) || fromJSON(needs.git_flags.outputs.IS_PULL)
+    name: Checkout repo and related tasks
+    runs-on: ubuntu-latest
+    outputs:
+      gitCommit: ${{ steps.getGitCommit.outputs.gitCommit }}
+      gitRepo: ${{ steps.getGitRepo.outputs.gitRepo}}
+      stageTag: ${{ steps.setStageTag.outputs.value}}
+    steps:
+      # Checkout Repo
+      - id: getGitCommit
+        name: getGitCommit
+        run: echo "gitCommit=$(echo ${{ github.sha }} | cut -c 1-7)" >> $GITHUB_OUTPUT
+      # Get the git repo URL
+      - id: getGitRepo
+        name: getGitRepo
+        run: echo "gitRepo=$(basename ${{ github.repositoryUrl }} .git)" >> $GITHUB_OUTPUT
+      # Set the stage tag
+      - id: setStageTag
+        name: setStageTag
+        uses: dkershner6/switch-case-action@v1
+        with:
+          default: 'test'
+          conditionals-with-values: |
+            ${{ fromJSON(env.IS_TEST) }} => test
+  test_and_deploy:
+    name: Test and deploy
+    if:
+      ${{ fromJSON(needs.git_flags.outputs.IS_TEST) || fromJSON(needs.git_flags.outputs.IS_PULL)
+    needs: [git_flags, setup]
+    runs-on: ubuntu-latest
+    steps:
+      - id: checkout
+        uses: actions/checkout@v3
+      - id: install packages
+        name: Install npm packages
+        run: |
+          npm install --dev
+      - id: deploy_serverless
+        name: Deploy serverless packages
+        if:
+          ${{  fromJSON(needs.git_flags.outputs.IS_TEST)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_ADMIN }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_ADMIN }}
+          AWS_REGION: us-east-1
+        run: |
+          npx serverless deploy --stage=${{needs.setup.outputs.stageTag}}

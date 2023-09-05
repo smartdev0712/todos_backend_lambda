@@ -1,0 +1,25 @@
+[
+    {
+      "Effect": "Allow",
+      "Action": "dynamodb:*",
+      "Resource": [
+        "arn:aws:dynamodb:us-east-1:133696059149:table/test-*",
+        "arn:aws:dynamodb:us-east-1:133696059149:table/test-*/index/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["lambda:InvokeFunction", "lambda:InvokeAsync"],
+      "Resource": ["arn:aws:lambda:*:*:function:*"]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "*"
+    }
+  ]
+  

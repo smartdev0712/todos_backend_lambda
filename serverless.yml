@@ -1,0 +1,58 @@
+service: digitrix-todo
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  stackTags:
+    env: ${opt:stage, 'test'}
+    version: ${git:tags}
+  stage: ${opt:stage, 'test'}
+  region: us-east-1
+  iamRoleStatements: ${file(./iamRoleStatements.json)}
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-plugin-git-variables
+  - serverless-plugin-resource-tagging
+  - serverless-offline
+
+package:
+  individually: true
+
+functions:
+  getTasks:
+    tags:
+      service: digitrix-todo-getTasks
+    handler: src/jsHandler.getTasks
+    events:
+      - http:
+          path: tasks
+          method: get
+          cors: true
+  createTask:
+    tags:
+      service: digitrix-todo-createTask
+    handler: src/jsHandler.createTask
+    events:
+      - http:
+          path: tasks
+          method: post
+          cors: true
+  editTask:
+    tags:
+      service: digitrix-todo-editTask
+    handler: src/jsHandler.editTask
+    events:
+      - http:
+          path: tasks/{id}
+          method: patch
+          cors: true
+  deleteTask:
+    tags:
+      service: digitrix-todo-deleteTask
+    handler: src/jsHandler.deleteTask
+    events:
+      - http:
+          path: tasks/{id}
+          method: delete
+          cors: true
