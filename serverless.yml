@@ -28,7 +28,6 @@ functions:
       - http:
           path: tasks
           method: get
-          cors: true
   createTask:
     tags:
       service: digitrix-todo-createTask
@@ -37,7 +36,6 @@ functions:
       - http:
           path: tasks
           method: post
-          cors: true
   editTask:
     tags:
       service: digitrix-todo-editTask
@@ -46,7 +44,6 @@ functions:
       - http:
           path: tasks/{id}
           method: patch
-          cors: true
   deleteTask:
     tags:
       service: digitrix-todo-deleteTask
@@ -55,4 +52,3 @@ functions:
       - http:
           path: tasks/{id}
           method: delete
-          cors: true
