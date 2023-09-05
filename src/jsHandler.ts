@@ -18,7 +18,7 @@ import {
   PatchEvent,
   PostEvent,
 } from "./types/lambdaTypes";
-import { CreateBodyType, UpdateBodyType } from "./types/dynamodbTypes";
+import { CreateBodyType, TaskType, UpdateBodyType } from "./types/dynamodbTypes";
 
 const dynamodb = new DynamoDBClient({ region: "us-east-1" });
 
@@ -35,11 +35,23 @@ export const getTasks = (
   dynamodb
     .send(new ScanCommand(scanParams))
     .then((data) => {
-      console.log("all tasks", data.Items);
+      const results: any = [];
+      for (let item of data.Items as unknown as TaskType[]) {
+        const newItem = {
+            id: item.id?.S,
+            title: item.title?.S,
+            details: item.details?.S,
+            created_date: item.created_date?.N,
+            due_date: item.due_date?.N,
+            priority: item.priority?.S
+        };
+        results.push(newItem);
+      }
+      console.log("all tasks", results);
       const response = {
         statusCode: 200,
         headers: { 'Access-Control-Allow-Origin': '*' },
-        body: JSON.stringify(data.Items),
+        body: JSON.stringify(results),
       };
       callback(null, response);
     })
@@ -71,7 +83,7 @@ export const createTask = (
   dynamodb
     .send(new PutItemCommand(newTask))
     .then((data) => {
-      console.log("successfully update the item");
+      console.log("successfully create the item", newTask);
       const response = {
         statusCode: 200,
         headers: { 'Access-Control-Allow-Origin': '*' },
@@ -133,7 +145,7 @@ export const editTask = (
   dynamodb
     .send(new UpdateItemCommand(params))
     .then((data) => {
-      console.log("successfully update the data");
+      console.log("successfully update the data for " + id);
       callback(null, data);
     })
     .catch((err) => {
@@ -158,7 +170,7 @@ export const deleteTask = (
   dynamodb
     .send(new DeleteItemCommand(params))
     .then((data) => {
-      console.log("item successfully removed");
+      console.log("item successfully removed for " + id);
       callback(null, data);
     })
     .catch((err) => {
