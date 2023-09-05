@@ -28,6 +28,10 @@ functions:
       - http:
           path: tasks
           method: get
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
   createTask:
     tags:
       service: digitrix-todo-createTask
@@ -36,6 +40,10 @@ functions:
       - http:
           path: tasks
           method: post
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
   editTask:
     tags:
       service: digitrix-todo-editTask
@@ -44,6 +52,10 @@ functions:
       - http:
           path: tasks/{id}
           method: patch
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
   deleteTask:
     tags:
       service: digitrix-todo-deleteTask
@@ -52,3 +64,7 @@ functions:
       - http:
           path: tasks/{id}
           method: delete
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
