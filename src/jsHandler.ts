@@ -18,7 +18,7 @@ import {
   PatchEvent,
   PostEvent,
 } from "./types/lambdaTypes";
-import { CreateOrUpdateBodyType } from "./types/dynamodbTypes";
+import { CreateBodyType, UpdateBodyType } from "./types/dynamodbTypes";
 
 const dynamodb = new DynamoDBClient({ region: "us-east-1" });
 
@@ -54,13 +54,14 @@ export const createTask = (
   callback: LambdaCallback
 ) => {
   console.log("Function Starting...", event);
-  const body: CreateOrUpdateBodyType = JSON.parse(event.body);
+  const body: CreateBodyType = JSON.parse(event.body);
   const id: string = uuidv4();
   const newTask: PutItemCommandInput = {
     Item: {
       id: { S: id },
       title: { S: body.title },
       details: { S: body.details },
+      created_date: { N: body.created_date.toString() },
       due_date: { N: body.due_date.toString() },
       priority: { S: body.priority },
     },
@@ -97,7 +98,7 @@ export const editTask = (
 ) => {
   console.log("Function Starting...", event);
   const id: string = event.queryStringParameters.id;
-  const body: CreateOrUpdateBodyType = JSON.parse(event.body);
+  const body: UpdateBodyType = JSON.parse(event.body);
   const params: UpdateItemCommandInput = {
     TableName: "test-tasks",
     Key: {
