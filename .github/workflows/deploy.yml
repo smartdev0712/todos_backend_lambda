@@ -1,13 +1,13 @@
 name: Digitrix API
 on:
   push:
-    branches: ['master']
+    branches: ['main']
   pull_request:
-    branches: ['master']
+    branches: ['main']
 
 env:
-  IS_TEST: ${{ github.ref_type == 'branch' && github.ref_name == 'master'}}
-  IS_PULL: ${{  github.event_name == 'pull_request' && ( github.base_ref == 'master') }}
+  IS_TEST: ${{ github.ref_type == 'branch' && github.ref_name == 'main'}}
+  IS_PULL: ${{  github.event_name == 'pull_request' && ( github.base_ref == 'main') }}
 
 concurrency:
   group: ${{ github.ref }}
