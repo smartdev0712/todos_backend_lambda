@@ -38,6 +38,7 @@ export const getTasks = (
       console.log("all tasks", data.Items);
       const response = {
         statusCode: 200,
+        headers: { 'Access-Control-Allow-Origin': '*' },
         body: JSON.stringify(data.Items),
       };
       callback(null, response);
@@ -73,6 +74,7 @@ export const createTask = (
       console.log("successfully update the item");
       const response = {
         statusCode: 200,
+        headers: { 'Access-Control-Allow-Origin': '*' },
         body: JSON.stringify({
           message: "response for task create",
           input: body,
@@ -85,6 +87,7 @@ export const createTask = (
       console.error(err);
       const response = {
         statusCode: err.statusCode,
+        headers: { 'Access-Control-Allow-Origin': '*' },
         body: JSON.stringify(err),
       };
       return callback(null, response);
