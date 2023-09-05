@@ -3,8 +3,8 @@
       "Effect": "Allow",
       "Action": "dynamodb:*",
       "Resource": [
-        "arn:aws:dynamodb:us-east-1:133696059149:table/test-*",
-        "arn:aws:dynamodb:us-east-1:133696059149:table/test-*/index/*"
+        "arn:aws:dynamodb:us-east-1:612694816927:table/test-*",
+        "arn:aws:dynamodb:us-east-1:612694816927:table/test-*/index/*"
       ]
     },
     {
