@@ -13,14 +13,14 @@ export interface GetEvent {
 }
 
 export interface PatchEvent {
-  queryStringParameters: {
+  pathParameters: {
     id: string;
   };
   body: string;
 }
 
-export interface DeleteEvent {
-  queryStringParameters: {
+export interface GetOrDeleteEvent {
+  pathParameters: {
     id: string;
   };
 }

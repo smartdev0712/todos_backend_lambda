@@ -4,6 +4,8 @@ import {
   DeleteItemCommand,
   PutItemCommandInput,
   PutItemCommand,
+  QueryCommandInput,
+  QueryCommand,
   ScanCommandInput,
   ScanCommand,
   UpdateItemCommandInput,
@@ -11,14 +13,18 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { v4 as uuidv4 } from "uuid";
 import {
-  DeleteEvent,
   GetEvent,
+  GetOrDeleteEvent,
   LambdaCallback,
   LambdaContext,
   PatchEvent,
   PostEvent,
 } from "./types/lambdaTypes";
-import { CreateBodyType, TaskType, UpdateBodyType } from "./types/dynamodbTypes";
+import {
+  CreateBodyType,
+  TaskType,
+  UpdateBodyType,
+} from "./types/dynamodbTypes";
 
 const dynamodb = new DynamoDBClient({ region: "us-east-1" });
 
@@ -38,22 +44,67 @@ export const getTasks = (
       const results: any = [];
       for (let item of data.Items as unknown as TaskType[]) {
         const newItem = {
-            id: item.id?.S,
-            title: item.title?.S,
-            details: item.details?.S,
-            created_date: item.created_date?.N,
-            due_date: item.due_date?.N,
-            priority: item.priority?.S
+          id: item.id?.S,
+          title: item.title?.S,
+          details: item.details?.S,
+          created_date: item.created_date?.N,
+          due_date: item.due_date?.N,
+          priority: item.priority?.S,
         };
         results.push(newItem);
       }
       console.log("all tasks", results);
       const response = {
         statusCode: 200,
-        headers: { 'Access-Control-Allow-Origin': '*' },
+        headers: { "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify(results),
       };
       callback(null, response);
+    })
+    .catch((err) => {
+      console.error(err);
+      callback(err, null);
+    });
+};
+
+export const getTask = (
+  event: GetOrDeleteEvent,
+  context: LambdaContext,
+  callback: LambdaCallback
+) => {
+  console.log("Function Starting...", event);
+  const id = event.pathParameters.id;
+  const params: QueryCommandInput = {
+    TableName: "test-tasks",
+    KeyConditionExpression: "#id = :id",
+    ExpressionAttributeNames: { "#id": "id" },
+    ExpressionAttributeValues: {
+      ":id": { S: id },
+    },
+  };
+  dynamodb
+    .send(new QueryCommand(params))
+    .then((data) => {
+      if (data.Items) {
+        const result = data.Items[0] as unknown as TaskType;
+        const newItem = {
+          id: result.id.S,
+          title: result.title.S,
+          details: result.details.S,
+          created_date: result.created_date.N,
+          due_date: result.due_date.N,
+          priority: result.priority.S,
+        };
+        console.log("task for " + id, newItem);
+        const response = {
+          statusCode: 200,
+          headers: { "Access-Control-Allow-Origin": "*" },
+          body: JSON.stringify(newItem),
+        };
+        callback(null, response);
+      } else {
+        callback("cannot find the task", null);
+      }
     })
     .catch((err) => {
       console.error(err);
@@ -86,7 +137,7 @@ export const createTask = (
       console.log("successfully create the item", newTask);
       const response = {
         statusCode: 200,
-        headers: { 'Access-Control-Allow-Origin': '*' },
+        headers: { "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify({
           message: "response for task create",
           input: body,
@@ -99,7 +150,7 @@ export const createTask = (
       console.error(err);
       const response = {
         statusCode: err.statusCode,
-        headers: { 'Access-Control-Allow-Origin': '*' },
+        headers: { "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify(err),
       };
       return callback(null, response);
@@ -112,7 +163,7 @@ export const editTask = (
   callback: LambdaCallback
 ) => {
   console.log("Function Starting...", event);
-  const id: string = event.queryStringParameters.id;
+  const id: string = event.pathParameters.id;
   const body: UpdateBodyType = JSON.parse(event.body);
   const params: UpdateItemCommandInput = {
     TableName: "test-tasks",
@@ -145,8 +196,14 @@ export const editTask = (
   dynamodb
     .send(new UpdateItemCommand(params))
     .then((data) => {
-      console.log("successfully update the data for " + id);
-      callback(null, data);
+      const message: string = "successfully update the data for " + id;
+      console.log(message);
+      const response = {
+        statusCode: 200,
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: message,
+      };
+      callback(null, response);
     })
     .catch((err) => {
       console.error(err);
@@ -155,12 +212,12 @@ export const editTask = (
 };
 
 export const deleteTask = (
-  event: DeleteEvent,
+  event: GetOrDeleteEvent,
   context: LambdaContext,
   callback: LambdaCallback
 ) => {
   console.log("Function Starting...", event);
-  const id: string = event.queryStringParameters.id;
+  const id: string = event.pathParameters.id;
   const params: DeleteItemCommandInput = {
     Key: {
       id: { S: id },
@@ -170,8 +227,14 @@ export const deleteTask = (
   dynamodb
     .send(new DeleteItemCommand(params))
     .then((data) => {
-      console.log("item successfully removed for " + id);
-      callback(null, data);
+      const message: string = "item successfully removed for " + id;
+      console.log(message);
+      const response = {
+        statusCode: 200,
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: message,
+      };
+      callback(null, response);
     })
     .catch((err) => {
       console.error(err);

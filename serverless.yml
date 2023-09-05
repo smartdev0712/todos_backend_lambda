@@ -32,6 +32,18 @@ functions:
             origin: "*"
             headers:
               - Content-Type
+  getTask:
+    tags:
+      service: digitrix-todo-getTask
+    handler: src/jsHandler.getTask
+    events:
+      - http:
+          path: tasks/{id}
+          method: get
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
   createTask:
     tags:
       service: digitrix-todo-createTask
